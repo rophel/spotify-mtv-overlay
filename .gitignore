@@ -1,0 +1,21 @@
+# Browser extension development files
+*.crx
+*.pem
+*.xpi
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*~

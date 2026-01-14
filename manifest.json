@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "Spotify MTV Overlay",
+  "version": "1.0.0",
+  "description": "Adds MTV-style artist/album/label overlay to Spotify web player",
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "https://open.spotify.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://open.spotify.com/*"],
+      "js": ["content.js"],
+      "css": ["overlay.css"],
+      "run_at": "document_end"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["fonts/*"],
+      "matches": ["https://open.spotify.com/*"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  }
+}

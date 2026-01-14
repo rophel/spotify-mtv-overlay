@@ -1,0 +1,63 @@
+/* MTV2-Style Overlay (Year 2000 Aesthetic) */
+
+@font-face {
+    font-family: 'Kabel Black';
+    src: url('chrome-extension://__MSG_@@extension_id__/fonts/kabel-black.otf') format('opentype');
+    font-weight: 900;
+    font-style: normal;
+}
+
+.mtv-overlay {
+    position: fixed;
+    /* bottom and left are set dynamically by JavaScript */
+    z-index: 999999;
+    pointer-events: none;
+    transition: opacity 0.5s ease-in-out;
+    font-family: 'Kabel Black', 'Impact', 'Arial Black', sans-serif;
+    opacity: 0;
+}
+
+.mtv-overlay.hidden {
+    opacity: 0;
+}
+
+.mtv-overlay.visible {
+    opacity: 1;
+}
+
+.mtv-overlay-content {
+    padding: 0;
+}
+
+/* Artist name - mixed case as provided by Spotify */
+.mtv-artist {
+    /* font-size set dynamically by JavaScript based on video height */
+    font-weight: 900;
+    color: #ffffff;
+    margin-bottom: 2px;
+    /* Stronger drop shadow - layered for depth, positioned below-right */
+    text-shadow:
+        4px 4px 0px #000000,
+        5px 5px 0px #000000,
+        6px 6px 2px rgba(0, 0, 0, 0.8);
+    line-height: 0.95;
+    /* Condense/squish the font vertically */
+    transform: scaleY(0.85);
+    transform-origin: bottom left;
+}
+
+/* Song title - displayed in quotes */
+.mtv-song {
+    /* font-size set dynamically by JavaScript based on video height */
+    font-weight: 900;
+    color: #ffffff;
+    /* Stronger drop shadow - layered for depth, positioned below-right */
+    text-shadow:
+        4px 4px 0px #000000,
+        5px 5px 0px #000000,
+        6px 6px 2px rgba(0, 0, 0, 0.8);
+    line-height: 0.95;
+    /* Condense/squish the font vertically */
+    transform: scaleY(0.85);
+    transform-origin: top left;
+}

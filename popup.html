@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Spotify MTV Overlay Settings</title>
+  <style>
+    body {
+      width: 280px;
+      padding: 15px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #121212;
+      color: #ffffff;
+      margin: 0;
+    }
+    
+    h1 {
+      font-size: 18px;
+      margin: 0 0 15px 0;
+      color: #1db954;
+    }
+    
+    .setting {
+      margin-bottom: 15px;
+    }
+    
+    .toggle-label {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    input[type="checkbox"] {
+      margin-right: 10px;
+      cursor: pointer;
+      width: 18px;
+      height: 18px;
+    }
+    
+    .info {
+      margin-top: 15px;
+      padding: 12px;
+      background: #282828;
+      border-radius: 6px;
+      font-size: 12px;
+      color: #b3b3b3;
+      line-height: 1.5;
+    }
+
+    .info strong {
+      color: #1db954;
+    }
+    
+    .status {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      text-align: center;
+      display: none;
+    }
+    
+    .status.success {
+      background: #1db954;
+      color: #ffffff;
+    }
+    
+    .footer {
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid #282828;
+      font-size: 11px;
+      color: #808080;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎵 MTV Overlay</h1>
+  
+  <div class="setting">
+    <label class="toggle-label">
+      <input type="checkbox" id="enabled" checked>
+      <span>Enable Overlay</span>
+    </label>
+  </div>
+  
+  <div class="info">
+    <strong>How it works:</strong><br>
+    Overlay appears 8 seconds after a new track starts, then fades out after 3 seconds.<br><br>
+    <strong>Tip:</strong> Works in fullscreen and "Expand Now Playing" video modes.
+  </div>
+  
+  <div class="status" id="status">Settings saved!</div>
+  
+  <div class="footer">
+    V1.0 • MTV2 Style
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>
