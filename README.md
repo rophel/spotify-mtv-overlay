@@ -5,7 +5,7 @@ A Chrome browser extension that adds MTV-style artist/album/label overlay text i
 ## Features
 
 -  Displays artist, song title in an MTV-style overlay
--  Easy toggle on/off via extension popup
+-  Easy toggle on/off via extension options
 
 ## Screenshots
 
