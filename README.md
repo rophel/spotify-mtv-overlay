@@ -4,12 +4,8 @@ A Chrome browser extension that adds MTV-style artist/album/label overlay text i
 
 ## Features
 
--  Displays artist, album, and label information in an MTV-style overlay
--  Customizable display duration (3-20 seconds)
--  Adjustable font sizes (small, medium, large)
--  Modern glassmorphic design with smooth animations
+-  Displays artist, song title in an MTV-style overlay
 -  Easy toggle on/off via extension popup
--  Spotify-themed color scheme
 
 ## Screenshots
 
