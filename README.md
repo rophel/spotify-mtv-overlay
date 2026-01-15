@@ -1,6 +1,6 @@
 # Spotify MTV Overlay
 
-A browser extension that adds MTV-style artist/album/label overlay text in the bottom left corner while Spotify plays music video playlists on the web player.
+A Chrome browser extension that adds MTV-style artist/album/label overlay text in the bottom left corner while Spotify plays music video playlists on the web player.
 
 ## Features
 
