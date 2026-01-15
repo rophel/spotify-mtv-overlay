@@ -11,6 +11,10 @@ A browser extension that adds MTV-style artist/album/label overlay text in the b
 - 🔧 Easy toggle on/off via extension popup
 - 💚 Spotify-themed color scheme
 
+## Screenshots
+
+![Lifestyles of the Rich & Famous by Good Charlotte](https://private-user-images.githubusercontent.com/6263214/535969436-d727b18b-b720-488e-b212-c90ae7fc0a5b.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3Njg0MzU4MTUsIm5iZiI6MTc2ODQzNTUxNSwicGF0aCI6Ii82MjYzMjE0LzUzNTk2OTQzNi1kNzI3YjE4Yi1iNzIwLTQ4OGUtYjIxMi1jOTBhZTdmYzBhNWIucG5nP1gtQW16LUFsZ29yaXRobT1BV1M0LUhNQUMtU0hBMjU2JlgtQW16LUNyZWRlbnRpYWw9QUtJQVZDT0RZTFNBNTNQUUs0WkElMkYyMDI2MDExNSUyRnVzLWVhc3QtMSUyRnMzJTJGYXdzNF9yZXF1ZXN0JlgtQW16LURhdGU9MjAyNjAxMTVUMDAwNTE1WiZYLUFtei1FeHBpcmVzPTMwMCZYLUFtei1TaWduYXR1cmU9ODk5Nzc3ZGQ3ZGQzNDRiZWZmZWE1OTgyYzg0YTYxMjFmYTY5ZDczZDc4YzdiNzM5ZDVkZWM3OTRmMDk2ZWI4MCZYLUFtei1TaWduZWRIZWFkZXJzPWhvc3QifQ.stIGd0VBHmabhWiN6OYSnmJVHXQfZUCQd68dsZ40mEE)
+
 ## Installation
 
 ### Chrome/Edge/Brave
