@@ -1,8 +1,10 @@
 // Popup Settings Script - V1
 
-document.addEventListener('DOMContentLoaded', function () {
+function initPopup(document, chrome) {
   const enabledCheckbox = document.getElementById('enabled');
   const status = document.getElementById('status');
+
+  if (!enabledCheckbox || !status) return;
 
   // Load saved settings
   chrome.storage.sync.get(['enabled'], function (result) {
@@ -26,4 +28,16 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   enabledCheckbox.addEventListener('change', saveSettings);
-});
+}
+
+// Initialize if in browser environment
+if (typeof document !== 'undefined' && typeof chrome !== 'undefined' && chrome.storage) {
+  document.addEventListener('DOMContentLoaded', () => {
+    initPopup(document, chrome);
+  });
+}
+
+// Export for testing
+if (typeof module !== 'undefined') {
+  module.exports = { initPopup };
+}
