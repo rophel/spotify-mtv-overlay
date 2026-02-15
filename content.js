@@ -4,6 +4,9 @@ let overlayElement = null;
 let lastTrackKey = '';
 let showTimeout = null;
 let hideTimeout = null;
+let trackingInterval = null;
+let initialTrackingTimeout = null;
+let positionInterval = null;
 let isEnabled = true;
 
 // Timing constants (in milliseconds)
@@ -57,8 +60,10 @@ function createOverlay() {
 }
 
 function startPositionTracking() {
+  if (positionInterval) clearInterval(positionInterval);
+
   // Update position every 100ms to track video element
-  setInterval(updateOverlayPosition, 100);
+  positionInterval = setInterval(updateOverlayPosition, 100);
 }
 
 function updateOverlayPosition() {
@@ -124,6 +129,7 @@ function updateOverlayPosition() {
 
 function removeOverlay() {
   clearAllTimeouts();
+  stopAllTracking();
   if (overlayElement) {
     overlayElement.remove();
     overlayElement = null;
@@ -138,6 +144,21 @@ function clearAllTimeouts() {
   if (hideTimeout) {
     clearTimeout(hideTimeout);
     hideTimeout = null;
+  }
+}
+
+function stopAllTracking() {
+  if (trackingInterval) {
+    clearInterval(trackingInterval);
+    trackingInterval = null;
+  }
+  if (initialTrackingTimeout) {
+    clearTimeout(initialTrackingTimeout);
+    initialTrackingTimeout = null;
+  }
+  if (positionInterval) {
+    clearInterval(positionInterval);
+    positionInterval = null;
   }
 }
 
@@ -270,8 +291,11 @@ function scheduleOverlay(trackInfo) {
 }
 
 function startTracking() {
+  if (trackingInterval) clearInterval(trackingInterval);
+  if (initialTrackingTimeout) clearTimeout(initialTrackingTimeout);
+
   // Check for track changes every second
-  setInterval(() => {
+  trackingInterval = setInterval(() => {
     const trackInfo = getCurrentTrackInfo();
     const trackKey = `${trackInfo.artist}|${trackInfo.song}`;
 
@@ -283,7 +307,7 @@ function startTracking() {
   }, 1000);
 
   // Initial check after 2 seconds
-  setTimeout(() => {
+  initialTrackingTimeout = setTimeout(() => {
     const trackInfo = getCurrentTrackInfo();
     if (trackInfo.artist && trackInfo.song) {
       lastTrackKey = `${trackInfo.artist}|${trackInfo.song}`;
