@@ -1,6 +1,11 @@
 // Spotify MTV Overlay Content Script - V1
 
 let overlayElement = null;
+let cachedVideoElement = null;
+let cachedArtistEl = null;
+let cachedSongEl = null;
+let lastVideoRect = null;
+let animationFrameId = null;
 let lastTrackKey = '';
 let showTimeout = null;
 let hideTimeout = null;
@@ -52,31 +57,54 @@ function createOverlay() {
 
   document.body.appendChild(overlayElement);
 
+  // Cache sub-elements
+  cachedArtistEl = overlayElement.querySelector('.mtv-artist');
+  cachedSongEl = overlayElement.querySelector('.mtv-song');
+
   // Start position tracking
   startPositionTracking();
 }
 
 function startPositionTracking() {
-  // Update position every 100ms to track video element
-  setInterval(updateOverlayPosition, 100);
+  if (animationFrameId) return;
+
+  function loop() {
+    updateOverlayPosition();
+    animationFrameId = requestAnimationFrame(loop);
+  }
+  animationFrameId = requestAnimationFrame(loop);
 }
 
 function updateOverlayPosition() {
-  if (!overlayElement) return;
+  if (!overlayElement || overlayElement.classList.contains('hidden')) return;
 
-  const videoElement = document.querySelector('video');
-  if (!videoElement) return;
+  if (!cachedVideoElement || !document.body.contains(cachedVideoElement)) {
+    cachedVideoElement = document.querySelector('video');
+  }
 
-  const rect = videoElement.getBoundingClientRect();
+  if (!cachedVideoElement) return;
+
+  const rect = cachedVideoElement.getBoundingClientRect();
 
   // Only update if video is reasonably sized (in video mode)
   if (rect.width < 400 || rect.height < 300) return;
 
-  // Calculate actual video content bounds (excluding letterbox/pillarbox black bars)
-  const videoNaturalWidth = videoElement.videoWidth;
-  const videoNaturalHeight = videoElement.videoHeight;
+  const videoNaturalWidth = cachedVideoElement.videoWidth;
+  const videoNaturalHeight = cachedVideoElement.videoHeight;
 
   if (!videoNaturalWidth || !videoNaturalHeight) return;
+
+  // Check if anything has changed since last update to avoid layout thrashing and redundant style writes
+  if (lastVideoRect &&
+    lastVideoRect.top === rect.top &&
+    lastVideoRect.left === rect.left &&
+    lastVideoRect.width === rect.width &&
+    lastVideoRect.height === rect.height &&
+    lastVideoRect.videoWidth === videoNaturalWidth &&
+    lastVideoRect.videoHeight === videoNaturalHeight &&
+    lastVideoRect.windowHeight === window.innerHeight) {
+    return;
+  }
 
   const videoAspect = videoNaturalWidth / videoNaturalHeight;
   const containerAspect = rect.width / rect.height;
@@ -115,18 +143,34 @@ function updateOverlayPosition() {
   const artistFontSize = Math.round(contentHeight * 0.055);
   const songFontSize = Math.round(contentHeight * 0.05);
 
-  const artistEl = overlayElement.querySelector('.mtv-artist');
-  const songEl = overlayElement.querySelector('.mtv-song');
+  if (cachedArtistEl) cachedArtistEl.style.fontSize = `${artistFontSize}px`;
+  if (cachedSongEl) cachedSongEl.style.fontSize = `${songFontSize}px`;
 
-  if (artistEl) artistEl.style.fontSize = `${artistFontSize}px`;
-  if (songEl) songEl.style.fontSize = `${songFontSize}px`;
+  // Update cached rect state
+  lastVideoRect = {
+    top: rect.top,
+    left: rect.left,
+    width: rect.width,
+    height: rect.height,
+    videoWidth: videoNaturalWidth,
+    videoHeight: videoNaturalHeight,
+    windowHeight: window.innerHeight
+  };
 }
 
 function removeOverlay() {
   clearAllTimeouts();
+  if (animationFrameId) {
+    cancelAnimationFrame(animationFrameId);
+    animationFrameId = null;
+  }
   if (overlayElement) {
     overlayElement.remove();
     overlayElement = null;
+    cachedVideoElement = null;
+    cachedArtistEl = null;
+    cachedSongEl = null;
+    lastVideoRect = null;
   }
 }
 
@@ -227,11 +271,11 @@ function getCurrentTrackInfo() {
 function updateOverlayContent(trackInfo) {
   if (!overlayElement) return;
 
-  const artistEl = overlayElement.querySelector('.mtv-artist');
-  const songEl = overlayElement.querySelector('.mtv-song');
+  if (!cachedArtistEl) cachedArtistEl = overlayElement.querySelector('.mtv-artist');
+  if (!cachedSongEl) cachedSongEl = overlayElement.querySelector('.mtv-song');
 
-  if (artistEl) artistEl.textContent = trackInfo.artist || '';
-  if (songEl) songEl.textContent = trackInfo.song ? `"${trackInfo.song}"` : '';
+  if (cachedArtistEl) cachedArtistEl.textContent = trackInfo.artist || '';
+  if (cachedSongEl) cachedSongEl.textContent = trackInfo.song ? `"${trackInfo.song}"` : '';
 }
 
 function scheduleOverlay(trackInfo) {
