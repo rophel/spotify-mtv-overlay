@@ -7,8 +7,14 @@
     "storage"
   ],
   "host_permissions": [
-    "https://open.spotify.com/*"
+    "https://open.spotify.com/*",
+    "https://musicbrainz.org/*",
+    "http://imvdb.com/*",
+    "https://imvdb.com/*"
   ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "content_scripts": [
     {
       "matches": ["https://open.spotify.com/*"],
