@@ -9,6 +9,13 @@ let initialTrackingTimeout = null;
 let positionInterval = null;
 let isEnabled = true;
 
+// Caching variables for performance
+let animationFrameId = null;
+let cachedVideoElement = null;
+let cachedArtistEl = null;
+let cachedSongEl = null;
+let lastVideoRect = null;
+
 // Timing constants (in milliseconds)
 const DELAY_BEFORE_SHOW = 8000;  // 8 seconds after track change
 const FADE_DURATION = 500;       // 0.5 second fade
@@ -55,33 +62,89 @@ function createOverlay() {
 
   document.body.appendChild(overlayElement);
 
-  // Start position tracking
-  startPositionTracking();
+  // Cache elements immediately
+  cachedArtistEl = overlayElement.querySelector('.mtv-artist');
+  cachedSongEl = overlayElement.querySelector('.mtv-song');
+
+  // Position tracking will start when overlay is shown
 }
 
 function startPositionTracking() {
-  if (positionInterval) clearInterval(positionInterval);
+  if (positionInterval) {
+    clearInterval(positionInterval);
+    positionInterval = null;
+  }
 
-  // Update position every 100ms to track video element
-  positionInterval = setInterval(updateOverlayPosition, 100);
+  // Use requestAnimationFrame for smoother updates synchronized with screen refresh
+  if (animationFrameId) return;
+
+  function loop() {
+    updateOverlayPosition();
+    animationFrameId = requestAnimationFrame(loop);
+  }
+  animationFrameId = requestAnimationFrame(loop);
+}
+
+function stopPositionTracking() {
+  if (positionInterval) {
+    clearInterval(positionInterval);
+    positionInterval = null;
+  }
+  if (animationFrameId) {
+    cancelAnimationFrame(animationFrameId);
+    animationFrameId = null;
+  }
 }
 
 function updateOverlayPosition() {
-  if (!overlayElement) return;
+  // Early exit if overlay is hidden or missing
+  if (!overlayElement || overlayElement.classList.contains('hidden')) return;
 
-  const videoElement = document.querySelector('video');
-  if (!videoElement) return;
+  // Check if cached video element is still valid
+  // Using isConnected is more performant than document.body.contains
+  if (!cachedVideoElement || !cachedVideoElement.isConnected) {
+    cachedVideoElement = document.querySelector('video');
+    // Reset state when video element changes
+    lastVideoRect = null;
+  }
 
-  const rect = videoElement.getBoundingClientRect();
+  if (!cachedVideoElement) return;
+
+  const rect = cachedVideoElement.getBoundingClientRect();
 
   // Only update if video is reasonably sized (in video mode)
   if (rect.width < 400 || rect.height < 300) return;
 
   // Calculate actual video content bounds (excluding letterbox/pillarbox black bars)
-  const videoNaturalWidth = videoElement.videoWidth;
-  const videoNaturalHeight = videoElement.videoHeight;
+  const videoNaturalWidth = cachedVideoElement.videoWidth;
+  const videoNaturalHeight = cachedVideoElement.videoHeight;
 
   if (!videoNaturalWidth || !videoNaturalHeight) return;
+
+  // Check if anything has changed since last update to avoid layout thrashing
+  // Use epsilon for floating point comparisons
+  const EPSILON = 0.5;
+  if (lastVideoRect &&
+      Math.abs(lastVideoRect.top - rect.top) < EPSILON &&
+      Math.abs(lastVideoRect.left - rect.left) < EPSILON &&
+      Math.abs(lastVideoRect.width - rect.width) < EPSILON &&
+      Math.abs(lastVideoRect.height - rect.height) < EPSILON &&
+      lastVideoRect.videoWidth === videoNaturalWidth &&
+      lastVideoRect.videoHeight === videoNaturalHeight &&
+      lastVideoRect.windowHeight === window.innerHeight) {
+    return;
+  }
+
+  // Update last known state
+  lastVideoRect = {
+    top: rect.top,
+    left: rect.left,
+    width: rect.width,
+    height: rect.height,
+    videoWidth: videoNaturalWidth,
+    videoHeight: videoNaturalHeight,
+    windowHeight: window.innerHeight
+  };
 
   const videoAspect = videoNaturalWidth / videoNaturalHeight;
   const containerAspect = rect.width / rect.height;
@@ -120,11 +183,8 @@ function updateOverlayPosition() {
   const artistFontSize = Math.round(contentHeight * 0.055);
   const songFontSize = Math.round(contentHeight * 0.05);
 
-  const artistEl = overlayElement.querySelector('.mtv-artist');
-  const songEl = overlayElement.querySelector('.mtv-song');
-
-  if (artistEl) artistEl.style.fontSize = `${artistFontSize}px`;
-  if (songEl) songEl.style.fontSize = `${songFontSize}px`;
+  if (cachedArtistEl) cachedArtistEl.style.fontSize = `${artistFontSize}px`;
+  if (cachedSongEl) cachedSongEl.style.fontSize = `${songFontSize}px`;
 }
 
 function removeOverlay() {
@@ -134,6 +194,12 @@ function removeOverlay() {
     overlayElement.remove();
     overlayElement = null;
   }
+
+  // Clear cached references
+  cachedVideoElement = null;
+  cachedArtistEl = null;
+  cachedSongEl = null;
+  lastVideoRect = null;
 }
 
 function clearAllTimeouts() {
@@ -156,10 +222,7 @@ function stopAllTracking() {
     clearTimeout(initialTrackingTimeout);
     initialTrackingTimeout = null;
   }
-  if (positionInterval) {
-    clearInterval(positionInterval);
-    positionInterval = null;
-  }
+  stopPositionTracking();
 }
 
 // Check if in fullscreen or expanded "Now Playing" view
@@ -248,11 +311,8 @@ function getCurrentTrackInfo() {
 function updateOverlayContent(trackInfo) {
   if (!overlayElement) return;
 
-  const artistEl = overlayElement.querySelector('.mtv-artist');
-  const songEl = overlayElement.querySelector('.mtv-song');
-
-  if (artistEl) artistEl.textContent = trackInfo.artist || '';
-  if (songEl) songEl.textContent = trackInfo.song ? `"${trackInfo.song}"` : '';
+  if (cachedArtistEl) cachedArtistEl.textContent = trackInfo.artist || '';
+  if (cachedSongEl) cachedSongEl.textContent = trackInfo.song ? `"${trackInfo.song}"` : '';
 }
 
 function scheduleOverlay(trackInfo) {
@@ -264,6 +324,7 @@ function scheduleOverlay(trackInfo) {
   // Hide immediately if currently visible
   overlayElement.classList.remove('visible');
   overlayElement.classList.add('hidden');
+  stopPositionTracking();
 
   console.log('Track changed, scheduling overlay:', trackInfo);
 
@@ -278,12 +339,20 @@ function scheduleOverlay(trackInfo) {
     updateOverlayContent(trackInfo);
     overlayElement.classList.remove('hidden');
     overlayElement.classList.add('visible');
+
+    // Start tracking position when visible
+    startPositionTracking();
+
     console.log('Showing overlay');
 
     // Schedule hide after 3 seconds
     hideTimeout = setTimeout(() => {
       overlayElement.classList.remove('visible');
       overlayElement.classList.add('hidden');
+
+      // Stop tracking position when hidden
+      stopPositionTracking();
+
       console.log('Hiding overlay');
     }, VISIBLE_DURATION);
 
