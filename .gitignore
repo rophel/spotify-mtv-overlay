@@ -19,3 +19,7 @@ Thumbs.db
 # Temporary files
 *.tmp
 *~
+
+# Node.js dependencies
+node_modules/
+package-lock.json

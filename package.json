@@ -1,6 +1,6 @@
 {
   "name": "spotify-mtv-overlay",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A Chrome browser extension that adds MTV-style artist/album/label overlay text in the bottom left corner while Spotify plays music video playlists on the web player.",
   "main": "content.js",
   "scripts": {
