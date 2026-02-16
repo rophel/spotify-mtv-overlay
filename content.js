@@ -50,6 +50,9 @@ function createOverlay() {
     <div class="mtv-overlay-content">
       <div class="mtv-artist"></div>
       <div class="mtv-song"></div>
+      <div class="mtv-album"></div>
+      <div class="mtv-label"></div>
+      <div class="mtv-director"></div>
     </div>
   `;
 
@@ -119,12 +122,21 @@ function updateOverlayPosition() {
   // Artist: ~5.5% of video height, Song: ~5% of video height
   const artistFontSize = Math.round(contentHeight * 0.055);
   const songFontSize = Math.round(contentHeight * 0.05);
+  const albumFontSize = Math.round(contentHeight * 0.04);
+  const labelFontSize = Math.round(contentHeight * 0.035);
+  const directorFontSize = Math.round(contentHeight * 0.035);
 
   const artistEl = overlayElement.querySelector('.mtv-artist');
   const songEl = overlayElement.querySelector('.mtv-song');
+  const albumEl = overlayElement.querySelector('.mtv-album');
+  const labelEl = overlayElement.querySelector('.mtv-label');
+  const directorEl = overlayElement.querySelector('.mtv-director');
 
   if (artistEl) artistEl.style.fontSize = `${artistFontSize}px`;
   if (songEl) songEl.style.fontSize = `${songFontSize}px`;
+  if (albumEl) albumEl.style.fontSize = `${albumFontSize}px`;
+  if (labelEl) labelEl.style.fontSize = `${labelFontSize}px`;
+  if (directorEl) directorEl.style.fontSize = `${directorFontSize}px`;
 }
 
 function removeOverlay() {
@@ -250,9 +262,15 @@ function updateOverlayContent(trackInfo) {
 
   const artistEl = overlayElement.querySelector('.mtv-artist');
   const songEl = overlayElement.querySelector('.mtv-song');
+  const albumEl = overlayElement.querySelector('.mtv-album');
+  const labelEl = overlayElement.querySelector('.mtv-label');
+  const directorEl = overlayElement.querySelector('.mtv-director');
 
   if (artistEl) artistEl.textContent = trackInfo.artist || '';
   if (songEl) songEl.textContent = trackInfo.song ? `"${trackInfo.song}"` : '';
+  if (albumEl) albumEl.textContent = trackInfo.album || '';
+  if (labelEl) labelEl.textContent = trackInfo.label || '';
+  if (directorEl) directorEl.textContent = trackInfo.director ? `Director: ${trackInfo.director}` : '';
 }
 
 function scheduleOverlay(trackInfo) {
@@ -302,6 +320,31 @@ function startTracking() {
     if (trackInfo.artist && trackInfo.song && trackKey !== lastTrackKey) {
       console.log('Track changed:', trackInfo);
       lastTrackKey = trackKey;
+
+      // Fetch additional metadata
+      if (chrome.runtime && chrome.runtime.sendMessage) {
+        chrome.runtime.sendMessage({
+          type: 'FETCH_METADATA',
+          artist: trackInfo.artist,
+          song: trackInfo.song
+        }, (response) => {
+          if (chrome.runtime.lastError) {
+            console.log('Metadata fetch skipped:', chrome.runtime.lastError.message);
+            return;
+          }
+          if (response) {
+            console.log('Metadata received:', response);
+            if (response.album) trackInfo.album = response.album;
+            if (response.label) trackInfo.label = response.label;
+            if (response.director) trackInfo.director = response.director;
+
+            // Update UI immediately in case the fetch finishes after the overlay is already shown
+            // or to ensure the DOM is pre-populated before the show transition
+            updateOverlayContent(trackInfo);
+          }
+        });
+      }
+
       scheduleOverlay(trackInfo);
     }
   }, 1000);
@@ -311,6 +354,23 @@ function startTracking() {
     const trackInfo = getCurrentTrackInfo();
     if (trackInfo.artist && trackInfo.song) {
       lastTrackKey = `${trackInfo.artist}|${trackInfo.song}`;
+
+      // Fetch additional metadata for initial load
+      if (chrome.runtime && chrome.runtime.sendMessage) {
+        chrome.runtime.sendMessage({
+          type: 'FETCH_METADATA',
+          artist: trackInfo.artist,
+          song: trackInfo.song
+        }, (response) => {
+          if (!chrome.runtime.lastError && response) {
+            if (response.album) trackInfo.album = response.album;
+            if (response.label) trackInfo.label = response.label;
+            if (response.director) trackInfo.director = response.director;
+            updateOverlayContent(trackInfo);
+          }
+        });
+      }
+
       scheduleOverlay(trackInfo);
     }
   }, 2000);
