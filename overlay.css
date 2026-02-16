@@ -27,9 +27,6 @@
 
 .mtv-overlay-content {
     padding: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
 }
 
 /* Artist name - mixed case as provided by Spotify */
@@ -63,25 +60,4 @@
     /* Condense/squish the font vertically */
     transform: scaleY(0.85);
     transform-origin: top left;
-}
-
-/* Additional Metadata */
-.mtv-album,
-.mtv-label,
-.mtv-director {
-    /* font-size set dynamically by JavaScript */
-    font-weight: 900;
-    color: #ffffff;
-    text-shadow:
-        3px 3px 0px #000000,
-        4px 4px 0px #000000,
-        5px 5px 2px rgba(0, 0, 0, 0.8);
-    line-height: 0.95;
-    transform: scaleY(0.85);
-    transform-origin: top left;
-    margin-top: 1px;
-}
-
-.mtv-director {
-    margin-top: 3px;
 }
