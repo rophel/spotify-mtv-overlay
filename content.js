@@ -51,14 +51,25 @@ function createOverlay() {
   `;
 
   document.body.appendChild(overlayElement);
-
-  // Start position tracking
-  startPositionTracking();
 }
 
-function startPositionTracking() {
-  // Update position every 100ms to track video element
-  setInterval(updateOverlayPosition, 100);
+let animationFrameId = null;
+
+function startPositionLoop() {
+  if (!animationFrameId) {
+    const loop = () => {
+      updateOverlayPosition();
+      animationFrameId = requestAnimationFrame(loop);
+    };
+    loop();
+  }
+}
+
+function stopPositionLoop() {
+  if (animationFrameId) {
+    cancelAnimationFrame(animationFrameId);
+    animationFrameId = null;
+  }
 }
 
 function updateOverlayPosition() {
@@ -131,6 +142,7 @@ function removeOverlay() {
 }
 
 function clearAllTimeouts() {
+  stopPositionLoop();
   if (showTimeout) {
     clearTimeout(showTimeout);
     showTimeout = null;
@@ -255,6 +267,11 @@ function scheduleOverlay(trackInfo) {
     }
 
     updateOverlayContent(trackInfo);
+
+    // Update position immediately and start animation loop
+    updateOverlayPosition();
+    startPositionLoop();
+
     overlayElement.classList.remove('hidden');
     overlayElement.classList.add('visible');
     console.log('Showing overlay');
@@ -263,6 +280,7 @@ function scheduleOverlay(trackInfo) {
     hideTimeout = setTimeout(() => {
       overlayElement.classList.remove('visible');
       overlayElement.classList.add('hidden');
+      stopPositionLoop();
       console.log('Hiding overlay');
     }, VISIBLE_DURATION);
 
